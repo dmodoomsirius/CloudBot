@@ -24,6 +24,7 @@ class HookType(enum.Enum):
     regex = 5,
     command = 6,
     irc_raw = 7,
+    periodic = 8
 
 
 def find_plugins(plugin_directories):
@@ -45,7 +46,7 @@ def find_hooks(title, module):
     """
     :type title: str
     :type module: object
-    :rtype: dict[HookType, list[Hook | CommandHook | RegexHook | EventHook | IrcRawHook]]
+    :rtype: dict[HookType, list[Hook | CommandHook | RegexHook | PeriodicHook | EventHook | IrcRawHook]]
     """
     # set the loaded flag
     module._plugins_loaded = True
@@ -161,6 +162,7 @@ class PluginManager:
     :type event_type_hooks: dict[cloudbot.event.EventType, list[EventHook]]
     :type regex_hooks: list[(re.__Regex, RegexHook)]
     :type sieves: list[SieveHook]
+    :type periodic: list[PeriodicHook]
     """
 
     def __init__(self, bot):
@@ -176,6 +178,8 @@ class PluginManager:
         self.event_type_hooks = {}
         self.regex_hooks = []
         self.sieves = []
+        self.periodic = []
+
         self.shutdown_hooks = []
         self._hook_locks = {}
 
@@ -249,6 +253,11 @@ class PluginManager:
                 logger.warning("Not registering hooks from plugin {}: on_start hook errored".format(title))
                 return
 
+        # start periodic hooks
+        for periodic_hook in hooks[HookType.periodic]:
+            asyncio.async(self._start_periodic(periodic_hook))
+            self._log_hook(periodic_hook)
+
         # register events
         for event_hook in hooks[HookType.event]:
             for event_type in event_hook.types:
@@ -291,6 +300,9 @@ class PluginManager:
         for sieve_hook in hooks[HookType.sieve]:
             self.sieves.append(sieve_hook)
             self._log_hook(sieve_hook)
+
+        # sort sieve hooks by priority
+        self.sieves.sort(key=lambda x: x.priority)
 
         # register shutdown hooks
         for stop_hook in hooks[HookType.on_stop]:
@@ -355,6 +367,17 @@ class PluginManager:
             return None
         else:
             return result
+
+    @asyncio.coroutine
+    def _start_periodic(self, hook):
+        interval = hook.interval
+        initial_interval = hook.initial_interval
+        yield from asyncio.sleep(initial_interval)
+
+        while True:
+            event = Event(bot=self.bot, hook=hook)
+            yield from self.launch(hook, event)
+            yield from asyncio.sleep(interval)
 
     @asyncio.coroutine
     def launch(self, hook, event):
@@ -473,6 +496,15 @@ class OnStopHook(Hook):
 class SieveHook(Hook):
     type = HookType.sieve
 
+    def __init__(self, plugin, decorator):
+        """
+        :type plugin: Plugin
+        :type decorator: cloudbot.hook.SieveDecorator
+        """
+        self.priority = decorator.kwargs.pop("priority", 100)
+
+        super().__init__(plugin, decorator)
+
     def __str__(self):
         return "sieve {} from {}".format(self.function_name, self.plugin)
 
@@ -518,6 +550,30 @@ class RegexHook(Hook):
 
     def __str__(self):
         return "regex {} from {}".format(self.function_name, self.plugin)
+
+
+class PeriodicHook(Hook):
+    """
+    :type interval: int
+    """
+    type = HookType.periodic
+
+    def __init__(self, plugin, decorator):
+        """
+        :type plugin: Plugin
+        :type periodic_hook: cloudbot.util.hook._PeriodicHook
+        """
+
+        self.interval = decorator.interval
+        self.initial_interval = decorator.kwargs.pop("initial_interval", self.interval)
+
+        super().__init__(plugin, decorator)
+
+    def __repr__(self):
+        return super().__repr__(interval=self.interval)
+
+    def __str__(self):
+        return "periodic hook ({} seconds) {} from {}".format(self.interval, self.function_name, self.plugin)
 
 
 class CommandHook(Hook):
@@ -584,4 +640,5 @@ _hook_classes = {
     HookType.regex: RegexHook,
     HookType.command: CommandHook,
     HookType.irc_raw: RawHook,
+    HookType.periodic: PeriodicHook,
 }

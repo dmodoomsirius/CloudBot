@@ -130,6 +130,27 @@ class RegexDecorator(_DecoratorClass):
         self.kwargs = kwargs
 
 
+class PeriodicDecorator(_DecoratorClass):
+    """
+    :type kwargs: dict[str, V]
+    :type interval: float | int
+    """
+    type = HookType.periodic
+
+    def __init__(self, interval, **kwargs):
+        """
+        :type function: function
+        """
+        super().__init__()
+
+        if interval:
+            self.interval = interval
+        else:
+            self.interval = 60
+
+        self.kwargs = kwargs
+
+
 class CommandDecorator(_DecoratorClass):
     """
     :type kwargs: dict[str, V]
@@ -204,6 +225,7 @@ on_stop = OnStopDecorator
 sieve = SieveDecorator
 event = EventDecorator
 regex = RegexDecorator
+periodic = PeriodicDecorator
 command = CommandDecorator
 irc_raw = IrcRawDecorator
 onload = on_start  # legacy - support @hook.onload()

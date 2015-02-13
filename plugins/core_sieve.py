@@ -43,6 +43,7 @@ def sieve_suite(bot, event, _hook):
         return None
 
     # check acls
+    print(conn)
     acl = conn.config.get('acls', {}).get(_hook.function_name)
     if acl:
         if 'deny-except' in acl:

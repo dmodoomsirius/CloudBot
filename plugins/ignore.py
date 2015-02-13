@@ -7,6 +7,8 @@ from cloudbot import hook
 from cloudbot.util import botvars
 
 
+ignore_cache = []
+
 table = Table(
     "ignored",
     botvars.metadata,
