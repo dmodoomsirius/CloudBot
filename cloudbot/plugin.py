@@ -391,7 +391,8 @@ class PluginManager:
         :rtype: bool
         """
 
-        if hook.type not in (HookType.on_start, HookType.on_stop):  # we don't need sieves on on_start or on_stop hooks.
+        if hook.type not in (HookType.on_start, HookType.on_stop, HookType.periodic):
+            # we don't need sieves on on_start, on_stop, or periodic hooks.
             for sieve in self.bot.plugin_manager.sieves:
                 event = yield from self._sieve(sieve, event, hook)
                 if event is None:
