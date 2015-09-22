@@ -43,6 +43,9 @@ def mcping(text):
         description = format_colors(" ".join(s.description["text"].split()))
     else:
         description = format_colors(" ".join(s.description.split()))
+        
+    # I really hate people for putting colors IN THE VERSION
+    # WTF REALLY THIS IS A THING NOW?
 
     if s.latency:
         return "{}\x0f - \x02{}\x0f - \x02{:.1f}ms\x02" \
