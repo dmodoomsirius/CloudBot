@@ -1,6 +1,6 @@
 from cloudbot import hook
 
-bbmChannels = ["#bbm-bots","#bbm-dev","#builtbroken","#builtbrokenmodding","#bbm-packs"]
+bbmChannels = ["#bbm-bots","#bbm-dev","#builtbroken","#builtbrokenmodding","#bbm-packs","#icbm","#artillects "]
 
 @hook.command("voltz")
 def bbmVoltz(text, message, chan):

@@ -29,9 +29,6 @@ def chans(text, message):
     
 @hook.command("bbmhelp")
 def bbmhelp(text, message, bot):
-    if any(x in chan for x in bbmChannels):
-            message("If you are looking for who is the staff type " + bot.config["connections"][0]["command_prefix"] + "bbmstaff")
-            message ("if you are looking for our sponsors please type " + bot.config["connections"][0]["command_prefix"] + "sponsor")
-            message("If you are looking for our official channels please do  " + bot.config["connections"][0]["command_prefix"] + "bbmchan")
-    else:
-            message("Command can only be run in Official BBM Channels. Join #bbm-bots to run the command.")
+    message("If you are looking for who is the staff type " + bot.config["connections"][0]["command_prefix"] + "bbmstaff")
+    message ("if you are looking for our sponsors please type " + bot.config["connections"][0]["command_prefix"] + "sponsor")
+    message("If you are looking for our official channels please do  " + bot.config["connections"][0]["command_prefix"] + "bbmchan")
