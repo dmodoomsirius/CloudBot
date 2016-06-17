@@ -9,7 +9,7 @@ def takingoff(text, message):
 def praise(text, message):
     message("All praise " + text +  " our lord and saviour.")
     
-@hook.command("unpraise")    
+@hook.command("unpraise")
 def unpraise(text, message):
     message("Don't praise. " + text +  " is satan.")
         
